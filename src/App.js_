@@ -1,0 +1,121 @@
+import './App.css';
+import * as React from 'react';
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/icons-material/Menu';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { green } from '@mui/material/colors';
+import Snackbar from '@mui/material/Snackbar';
+
+import Web3Modal from "web3modal";
+import WalletConnectProvider from "@walletconnect/web3-provider";
+
+const PROVIDER_NETWORK = 'binance';
+const PROVIDER_CHAIN_ID = 56;  
+const PROVIDER_RPC = { 56 : 'https://bsc-dataseed-binance.org/'};
+
+
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      // Purple and green play nicely together.
+      main: green[500],
+    },
+    secondary: {
+      // This is green.A700 as hex.
+      main: '#11cb5f',
+    },
+  },
+});
+
+const providerOptions = {
+  walletconnect: {
+    package: WalletConnectProvider, // required
+    options: {
+            rpc : PROVIDER_RPC,
+            network : PROVIDER_NETWORK,
+            chainId : PROVIDER_CHAIN_ID,
+            infuraId: "INFURA_ID" // required
+        }
+  }
+};
+
+const web3Modal = new Web3Modal({
+  network: "mainnet", // optional
+  cacheProvider: true, // optional
+  providerOptions // required
+});
+
+
+class  App extends React.Component {
+
+
+ constructor(props){
+    super(props);
+    this.state = {
+        online : false,
+        message: null
+    }
+
+ }
+
+ start = async () => {
+     try{
+     this.setState({
+        online : true,
+        message : "online" });
+   
+     } catch(e) {
+        console.error(e);
+    }
+}
+
+ end = () => {
+    this.setState({
+        online : false,
+        message : "disconnected" });
+ }
+
+ render(){
+  return (
+    <div className="App">
+ <ThemeProvider theme={theme}>
+       <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="static">
+        <Toolbar>
+          <IconButton
+            size="large"
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            sx={{ mr: 2 }}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          </Typography>
+          <Button color="inherit" onClick={ this.state.online ? this.start : this.end }>{ this.state.online ? "stop" : "start" }</Button>
+        </Toolbar>
+      </AppBar>
+    </Box>
+<Snackbar
+        open={ this.state.message != null }
+        autoHideDuration={6000}
+        onClose={ e => this.setState({ message : null}) }
+        message={ this.state.message }
+      />
+
+    <h1>Hello World</h1>
+      </ThemeProvider>
+      </div>
+  );
+ }
+
+}
+
+export default App;
