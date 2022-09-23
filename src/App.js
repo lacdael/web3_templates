@@ -45,7 +45,7 @@ const theme = createTheme({
 
 const CONTEXT_IPFS = "ipfs";
 const CONTEXT_PUBSUB = "pubsub";
-const CONTEXT_CONTRACT = "web3";
+const CONTEXT_CONTRACT = "web3_files";
 
 class  App extends React.Component {
 
@@ -98,13 +98,16 @@ class  App extends React.Component {
                                     onClose={ e => this.setState({ showMenu : false })}
                                 >
                                     <List>
-                                        {['wallet', 'ipfs-files'].map((text, index) => (
-                                            <ListItem key={text} disablePadding>
+                                        <ListItem disablePadding onClick={ e=> { this.setState({online:false,context:CONTEXT_CONTRACT })  }  }>
                                                 <ListItemButton>
-                                                    <ListItemText primary={text} />
+                                                    <ListItemText primary="ipfs & contract" />
                                                 </ListItemButton>
                                             </ListItem>
-                                        ))}
+                                            <ListItem disablePadding  onClick={ e=> { this.setState({online:false,context:CONTEXT_IPFS })  }  } >
+                                                <ListItemButton>
+                                                    <ListItemText primary="ipfs-files" />
+                                                </ListItemButton>
+                                            </ListItem>
                                     </List>
                                 </Drawer>
 
