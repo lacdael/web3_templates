@@ -9,7 +9,7 @@ import Web3 from "web3";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { create } from 'ipfs';
 
-import abi from "./ipfsFilesList.json";
+import abi from "./contracts/ipfsFilesList.json";
 
 const PROVIDER_NETWORK = 'binance';
 const PROVIDER_CHAIN_ID = 56;
@@ -36,7 +36,8 @@ const web3Modal = new Web3Modal({
 
 const CONTRACT_ADDR = "0x23A9F4D7A037D5fc9FcFa89EE47C2ebE86f6115a";
 
-class Web3App extends React.Component {
+
+export default class IPFSContract extends React.Component {
 
     constructor(props){
         super(props);
@@ -198,4 +199,3 @@ class Web3App extends React.Component {
     }
 
 }
-export default Web3App;

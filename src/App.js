@@ -28,7 +28,9 @@ import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
 import { create } from 'ipfs';
 import IPFSFiles from './ipfsFiles';
-import WEB3 from './web3App';
+import IPFSSync from './ipfsSync';
+import IPFSContract from './ipfsContract';
+import EIP712Sign from './eip712Sign';
 
 const theme = createTheme({
     palette: {
@@ -44,7 +46,8 @@ const theme = createTheme({
 });
 
 const CONTEXT_IPFS = "ipfs";
-const CONTEXT_PUBSUB = "pubsub";
+const CONTEXT_IPFS_SYNC = "ipfs-sync";
+const CONTEXT_EIP712 = "eip712Sign";
 const CONTEXT_CONTRACT = "web3_files";
 
 class  App extends React.Component {
@@ -108,6 +111,19 @@ class  App extends React.Component {
                                                     <ListItemText primary="ipfs-files" />
                                                 </ListItemButton>
                                             </ListItem>
+                                            <ListItem disablePadding  onClick={ e=> { this.setState({online:false,context:CONTEXT_IPFS_SYNC })  }  } >
+                                                <ListItemButton>
+                                                    <ListItemText primary="ipfs-sync" />
+                                                </ListItemButton>
+                                            </ListItem>
+                                             <ListItem disablePadding  onClick={ e=> { this.setState({online:false,context:CONTEXT_EIP712 })  }  } >
+                                                <ListItemButton>
+                                                    <ListItemText primary="eip712-sign" />
+                                                </ListItemButton>
+
+                                </ListItem>
+
+
                                     </List>
                                 </Drawer>
 
@@ -124,8 +140,12 @@ class  App extends React.Component {
                         {
                             this.state.context == CONTEXT_IPFS ?
                                 <IPFSFiles online={ this.state.online } callback={ this.eventHandler.bind(this) } /> :
-                            this.state.context == CONTEXT_CONTRACT ?
-                                <WEB3 online={ this.state.online } callback={ this.eventHandler.bind(this) } /> : null
+                            this.state.context === CONTEXT_CONTRACT ?
+                                <IPFSContract online={ this.state.online } callback={ this.eventHandler.bind(this) } /> :
+                            this.state.context === CONTEXT_IPFS_SYNC ?
+                                <IPFSSync online={ this.state.online } callback={ this.eventHandler.bind(this) } /> :
+                            this.state.context === CONTEXT_EIP712 ?
+                                <EIP712Sign online={ this.state.online } callback={ this.eventHandler.bind(this) } /> : null
                         }
                     </Container>
                 </ThemeProvider>
