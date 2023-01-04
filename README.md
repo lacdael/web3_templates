@@ -20,3 +20,7 @@ A simple zero knowledge proof smart contract, poving a number x is the product o
 
 [repo of snarkjs](https://github.com/iden3/snarkjs)
 
+# Libp2p
+
+A simple browser p2p chat app using libp2p.
+

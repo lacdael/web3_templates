@@ -7,15 +7,25 @@ import Button from '@mui/material/Button';
 import Web3Modal from "web3modal";
 import Web3 from "web3";
 import WalletConnectProvider from "@walletconnect/web3-provider";
+import ethProvider from "eth-provider";
 import { create } from 'ipfs';
 
 import abi from "./contracts/ipfsFilesList.json";
 
-const PROVIDER_NETWORK = 'binance';
-const PROVIDER_CHAIN_ID = 56;
-const PROVIDER_RPC = { 56 : 'https://bsc-dataseed-binance.org/'};
+const PROVIDER_NETWORK = 'Sepolia';
+const PROVIDER_CHAIN_ID = 11155111;
+const PROVIDER_RPC = { 56 : 'https://rpc-sepolia.rockx.com'};
 
 const providerOptions = {
+    frame: {
+        package: ethProvider, // required
+        options: {
+            rpc : PROVIDER_RPC,
+            network : PROVIDER_NETWORK,
+            chainId : PROVIDER_CHAIN_ID,
+            infuraId: "INFURA_ID" // required
+        }
+    },
     walletconnect: {
         package: WalletConnectProvider, // required
         options: {
@@ -34,7 +44,8 @@ const web3Modal = new Web3Modal({
 });
 
 
-const CONTRACT_ADDR = "0x23A9F4D7A037D5fc9FcFa89EE47C2ebE86f6115a";
+const CONTRACT_ADDR = "0xEaa9b42a7c7D2e866EdA8b23d50894d510d1C3b5";
+const CONTRACT_NETWORK = "11155111";
 
 
 export default class IPFSContract extends React.Component {
@@ -65,31 +76,38 @@ export default class IPFSContract extends React.Component {
     start = async () => {
         try{
 
-
             const provider = await web3Modal.connect();
-            this.web3 = new Web3(provider);
-            // Subscribe to accounts change
-            provider.on("accountsChanged", (accounts: string[]) => {
-                console.log(accounts);
-            });
+            if ( ""+parseInt( provider.chainId , 16 ) === CONTRACT_NETWORK ) {
 
-            // Subscribe to chainId change
-            provider.on("chainChanged", (chainId: number) => {
-                console.log(chainId);
-            });
 
-            // Subscribe to provider connection
-            provider.on("connect", (info: { chainId: number }) => {
-                console.log(info);
-            });
+                this.web3 = new Web3(provider);
+                // Subscribe to accounts change
+                provider.on("accountsChanged", (accounts: string[]) => {
+                    console.log(accounts);
+                });
 
-            // Subscribe to provider disconnection
-            provider.on("disconnect", (error: { code: number; message: string }) => {
-                console.log(error);
-            });
+                // Subscribe to chainId change
+                provider.on("chainChanged", (chainId: number) => {
+                    console.log(chainId);
+                });
 
-            this.initIPFS();
-            this.initContract();
+                // Subscribe to provider connection
+                provider.on("connect", (info: { chainId: number }) => {
+                    console.log(info);
+                });
+
+                // Subscribe to provider disconnection
+                provider.on("disconnect", (error: { code: number; message: string }) => {
+                    console.log(error);
+                });
+
+                this.initIPFS();
+                this.initContract();
+                this.props.callback( "message", "connected");
+            } else {
+                this.props.callback( "message", "wrong network - use Sepolia");
+            }
+
             //this.props.callback( "ipfs", this.node.isOnline() );
         } catch(e) {
             console.error(e);
@@ -162,38 +180,38 @@ export default class IPFSContract extends React.Component {
     render(){
         return (
             <>
-                <h2>ipfs : { this.state.ipfsOnline ? "online" : "offline" } </h2>
-                <h2> contract : {this.state.contract.length > 0 ? this.state.contract.substring(0,5)+"..." : ""  } </h2>
+            <h2>ipfs : { this.state.ipfsOnline ? "online" : "offline" } </h2>
+            <h2> contract : {this.state.contract.length > 0 ? this.state.contract.substring(0,5)+"..." : ""  } </h2>
 
-                <TextField
-                    fullWidth
-                    id="input-with-icon-textfield"
-                    label="Path"
-                    onKeyUp={ e => this.setState({ addPath : e.target.value }) }
-                    onBlur={ e => this.setState({ addPath : e.target.value }) }
-                /> <TextField
-                    fullWidth
-                    id="input-with-icon-textfield"
-                    label="Content"
-                    onKeyUp={ e => this.setState({ addContent : e.target.value }) }
-                    onBlur={ e => this.setState({ addContent : e.target.value }) }
+            <TextField
+            fullWidth
+            id="input-with-icon-textfield"
+            label="Path"
+            onKeyUp={ e => this.setState({ addPath : e.target.value }) }
+            onBlur={ e => this.setState({ addPath : e.target.value }) }
+            /> <TextField
+            fullWidth
+            id="input-with-icon-textfield"
+            label="Content"
+            onKeyUp={ e => this.setState({ addContent : e.target.value }) }
+            onBlur={ e => this.setState({ addContent : e.target.value }) }
 
-                    InputProps={{
-                        endAdornment: (
-                            <IconButton onClick={ e => this.addFile( this.state.addPath , this.state.addContent ) } >
-                                <SubdirectoryArrowLeftIcon />
-                            </IconButton>
-                        ),
-                    }}
-                />
-                <div>
-                    { this.state.addRslt && this.state.addRslt.cid.toString() }
-                </div>
-                <br/>
-                <Button variant="contained" onClick={ this.getFiles } >Get Files</Button>
-                <ul>
-                    { this.state.ipfsFiles.map( (f,i) => <li key={i}>{f}</li> ) }
-                </ul>
+            InputProps={{
+                endAdornment: (
+                    <IconButton onClick={ e => this.addFile( this.state.addPath , this.state.addContent ) } >
+                    <SubdirectoryArrowLeftIcon />
+                    </IconButton>
+                ),
+            }}
+            />
+            <div>
+            { this.state.addRslt && this.state.addRslt.cid.toString() }
+            </div>
+            <br/>
+            <Button variant="contained" onClick={ this.getFiles } >Get Files</Button>
+            <ul>
+            { this.state.ipfsFiles.map( (f,i) => <li key={i}>{f}</li> ) }
+            </ul>
             </>
         );
     }

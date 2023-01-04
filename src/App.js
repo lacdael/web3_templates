@@ -28,9 +28,10 @@ import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
 //Conponents
+import Libp2p from './libp2p';
 import IPFSFiles from './ipfsFiles';
 import IPFSSync from './ipfsSync';
-import IPFSContract from './ipfsContract';
+import IPFSContract from './ipfsList';
 import EIP712Sign from './eip712Sign';
 import ZKExample from './zkExample';
 
@@ -47,6 +48,7 @@ const theme = createTheme({
     },
 });
 
+const CONTEXT_LIBP2P = "libp2p";
 const CONTEXT_IPFS = "ipfs";
 const CONTEXT_IPFS_SYNC = "ipfs-sync";
 const CONTEXT_EIP712 = "eip712Sign";
@@ -104,14 +106,14 @@ class  App extends React.Component {
             onClose={ e => this.setState({ showMenu : false })}
             >
             <List>
-            <ListItem disablePadding onClick={ e=> { this.setState({online:false,context:CONTEXT_CONTRACT })  }  }>
-            <ListItemButton>
-            <ListItemText primary="ipfs & contract" />
-            </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding  onClick={ e=> { this.setState({online:false,context:CONTEXT_IPFS })  }  } >
+                       <ListItem disablePadding  onClick={ e=> { this.setState({online:false,context:CONTEXT_IPFS })  }  } >
             <ListItemButton>
             <ListItemText primary="ipfs-files" />
+            </ListItemButton>
+            </ListItem>
+             <ListItem disablePadding onClick={ e=> { this.setState({online:false,context:CONTEXT_CONTRACT })  }  }>
+            <ListItemButton>
+            <ListItemText primary="ipfs-files list" />
             </ListItemButton>
             </ListItem>
             <ListItem disablePadding  onClick={ e=> { this.setState({online:false,context:CONTEXT_IPFS_SYNC })  }  } >
@@ -129,9 +131,12 @@ class  App extends React.Component {
             <ListItemText primary="zkSNARK Example" />
             </ListItemButton>
 
-
             </ListItem>
-
+ <ListItem disablePadding  onClick={ e=> { this.setState({online:false,context:CONTEXT_LIBP2P })  }  } >
+            <ListItemButton>
+            <ListItemText primary="libp2p chat" />
+            </ListItemButton>
+            </ListItem>
 
             </List>
             </Drawer>
@@ -156,7 +161,9 @@ class  App extends React.Component {
                 this.state.context === CONTEXT_EIP712 ?
                 <EIP712Sign online={ this.state.online } callback={ this.eventHandler.bind(this) } /> :
                 this.state.context === CONTEXT_ZKEXAMPLE ?
-                <ZKExample online={ this.state.online } callback={ this.eventHandler.bind(this) } /> : null
+                <ZKExample online={ this.state.online } callback={ this.eventHandler.bind(this) } /> :
+                this.state.context === CONTEXT_LIBP2P ?
+                <Libp2p online={ this.state.online } callback={ this.eventHandler.bind(this) } /> : null
             }
             </Container>
             </ThemeProvider>
