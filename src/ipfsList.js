@@ -14,7 +14,7 @@ import abi from "./contracts/ipfsFilesList.json";
 
 const PROVIDER_NETWORK = 'Sepolia';
 const PROVIDER_CHAIN_ID = 11155111;
-const PROVIDER_RPC = { 56 : 'https://rpc-sepolia.rockx.com'};
+const PROVIDER_RPC = { 11155111 : 'https://rpc-sepolia.rockx.com'};
 
 const providerOptions = {
     frame: {

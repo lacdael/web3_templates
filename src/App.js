@@ -116,9 +116,10 @@ class  App extends React.Component {
             <ListItemText primary="ipfs-files list" />
             </ListItemButton>
             </ListItem>
+
             <ListItem disablePadding  onClick={ e=> { this.setState({online:false,context:CONTEXT_IPFS_SYNC })  }  } >
             <ListItemButton>
-            <ListItemText primary="ipfs-sync" />
+            <ListItemText primary="ipfs-files sync" />
             </ListItemButton>
             </ListItem>
             <ListItem disablePadding  onClick={ e=> { this.setState({online:false,context:CONTEXT_EIP712 })  }  } >

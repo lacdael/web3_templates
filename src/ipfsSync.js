@@ -6,24 +6,40 @@ import Button from '@mui/material/Button';
 import Web3Modal from "web3modal";
 import Web3 from "web3";
 import WalletConnectProvider from "@walletconnect/web3-provider";
+import ethProvider from "eth-provider";
 import { create } from 'ipfs';
 import { v4 as uuid } from 'uuid';
+
 import abi from "./contracts/ipfsFilesList.json";
-//0.8,7
-const CONTRACT_ADDR = "0x062854C0a7f9a39964cBeF1743888E926172912F";
-const CONTRACT_NETWORK = "5";
+
+const PROVIDER_NETWORK = 'Sepolia';
+const PROVIDER_CHAIN_ID = 11155111;
+const PROVIDER_RPC = { 11155111 : 'https://rpc-sepolia.rockx.com'};
+const CONTRACT_ADDR = "0xEaa9b42a7c7D2e866EdA8b23d50894d510d1C3b5";
+const CONTRACT_NETWORK = "11155111";
 
 const providerOptions = {
+    frame: {
+        package: ethProvider, // required
+        options: {
+            rpc : PROVIDER_RPC,
+            network : PROVIDER_NETWORK,
+            chainId : PROVIDER_CHAIN_ID,
+            infuraId: "INFURA_ID" // required
+        }
+    },
     walletconnect: {
         package: WalletConnectProvider, // required
         options: {
-            'rpc' : { 5 : 'https://rpc.goerli.mudit.blog/' },
-            'network': 'GöETH',
-            'chainid': 5,
+            rpc : PROVIDER_RPC,
+            network : PROVIDER_NETWORK,
+            chainId : PROVIDER_CHAIN_ID,
             infuraId: "INFURA_ID" // required
         }
     }
 };
+
+
 
 const web3Modal = new Web3Modal({
     network: "mainnet", // optional
@@ -99,7 +115,7 @@ class IPFSSync extends React.Component {
                 this.setState({ ipfsOnline: this.node.isOnline()  });
                 this.props.callback( "message", this.node.isOnline() ? "online" : "offline");
             } else {
-                this.props.callback( "message", "wrong network - use GöETH");
+                this.props.callback( "message", `wrong network - use ${ PROVIDER_NETWORK }`);
             }
 
         } catch(e) {
@@ -281,7 +297,7 @@ class IPFSSync extends React.Component {
     render(){
         return (
             <>
-                <h1>IPFS Sync</h1>
+                <h1>IPFS Files Sync</h1>
                 <h2>ipfs : { this.state.ipfsOnline ? "online" : "offline" } </h2>
                 <TextField
                     fullWidth
