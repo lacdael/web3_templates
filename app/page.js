@@ -1,6 +1,8 @@
-import './App.css';
+"use client"
+
 import * as React from 'react';
 //UI
+
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -27,13 +29,19 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
+
+const web3modal_KEY = process.env["NEXT_PUBLIC_PROJECT_ID"];
+
 //Conponents
+import EIP712Sign from './eip712Sign';
+import Ceramic from './ceramic';
+/*
 import Libp2p from './libp2p';
 import IPFSFiles from './ipfsFiles';
 import IPFSSync from './ipfsSync';
 import IPFSContract from './ipfsList';
-import EIP712Sign from './eip712Sign';
 import ZKExample from './zkExample';
+*/
 
 const theme = createTheme({
     palette: {
@@ -51,29 +59,67 @@ const theme = createTheme({
 const CONTEXT_LIBP2P = "libp2p";
 const CONTEXT_IPFS = "ipfs";
 const CONTEXT_IPFS_SYNC = "ipfs-sync";
-const CONTEXT_EIP712 = "eip712Sign";
-const CONTEXT_CONTRACT = "web3_files";
-const CONTEXT_ZKEXAMPLE = "zk_example";
+const CONTEXT_EIP712 = "eip712-Sign";
+const CONTEXT_CONTRACT = "ipfs files list";
+const CONTEXT_ZKEXAMPLE = "zk example";
+const CONTEXT_CERAMIC = "Ceramic Example";
+
+const CONTEXT_ARRAY = [
+	CONTEXT_IPFS,
+	CONTEXT_CONTRACT,
+	CONTEXT_IPFS_SYNC,
+	CONTEXT_EIP712,
+	CONTEXT_LIBP2P,
+	CONTEXT_CERAMIC
+];
+
 
 class  App extends React.Component {
+
 
     constructor(props){
         super(props);
         this.state = {
-            online : false,
+            action : false,
             showMenu: false,
             message: null,
             context: CONTEXT_IPFS,
         }
     }
 
+
+ getContent( what ) {
+
+     switch( this.state.context) {
+        case CONTEXT_EIP712 : return <EIP712Sign
+		     action={ this.state.action }
+		     vars={{'PROJECT_ID': web3modal_KEY } }
+		     callback={ this.eventHandler.bind(this) } />
+	case CONTEXT_CERAMIC : return <Ceramic
+		     action={ this.state.action }
+		     vars={{'PROJECT_ID': web3modal_KEY } }
+		     callback={ this.eventHandler.bind(this) } />
+	//case CONTEXT_IPFS : return <IPFSFiles online={ this.state.online } callback={ this.eventHandler.bind(this) } />
+	//case CONTEXT_CONTRACT : return <IPFSContract online={ this.state.online } callback={ this.eventHandler.bind(this) } />
+        //case CONTEXT_IPFS_SYNC : return <IPFSSync online={ this.state.online } callback={ this.eventHandler.bind(this) } />
+        //case CONTEXT_ZKEXAMPLE : return <ZKExample online={ this.state.online } callback={ this.eventHandler.bind(this) } />
+        //case CONTEXT_LIBP2P : return <Libp2p online={ this.state.online } callback={ this.eventHandler.bind(this) } />
+	     default: return <em>TODO: Migrate code </em>
+   }
+ 
+}
+
+
     eventHandler( what , data ) {
         switch( what ) {
             case "message": {
                 this.setState({ message : data });
             } break;
-            case CONTEXT_IPFS : {
-                this.setState({ online : data });
+            case "onlineState": {
+                this.setState({ onlineState : data });
+	    } break;
+	    case CONTEXT_IPFS : {
+                this.setState({ onlineState : data });
             } break;
         }
     }
@@ -99,46 +145,18 @@ class  App extends React.Component {
             </IconButton>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             </Typography>
-            <Button color="inherit" onClick={ this.state.online ? e => this.setState({ online : false }) : e => this.setState({online: true}) }>{ this.state.online ? "stop" : "start" }</Button>
+            <Button color="inherit" onClick={ e => this.setState({ 'action': !this.state.action }) }>{ this.state.onlineState ? "stop" : "start" }</Button>
             <Drawer
             anchor="left"
             open={ this.state.showMenu }
             onClose={ e => this.setState({ showMenu : false })}
             >
             <List>
-                       <ListItem disablePadding  onClick={ e=> { this.setState({online:false,context:CONTEXT_IPFS })  }  } >
-            <ListItemButton>
-            <ListItemText primary="ipfs-files" />
-            </ListItemButton>
-            </ListItem>
-             <ListItem disablePadding onClick={ e=> { this.setState({online:false,context:CONTEXT_CONTRACT })  }  }>
-            <ListItemButton>
-            <ListItemText primary="ipfs-files list" />
-            </ListItemButton>
-            </ListItem>
-
-            <ListItem disablePadding  onClick={ e=> { this.setState({online:false,context:CONTEXT_IPFS_SYNC })  }  } >
-            <ListItemButton>
-            <ListItemText primary="ipfs-files sync" />
-            </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding  onClick={ e=> { this.setState({online:false,context:CONTEXT_EIP712 })  }  } >
-            <ListItemButton>
-            <ListItemText primary="eip712-sign" />
-            </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding  onClick={ e=> { this.setState({online:false,context:CONTEXT_ZKEXAMPLE })  }  } >
-            <ListItemButton>
-            <ListItemText primary="zkSNARK Example" />
-            </ListItemButton>
-
-            </ListItem>
- <ListItem disablePadding  onClick={ e=> { this.setState({online:false,context:CONTEXT_LIBP2P })  }  } >
-            <ListItemButton>
-            <ListItemText primary="libp2p chat" />
-            </ListItemButton>
-            </ListItem>
-
+		{ CONTEXT_ARRAY.map( ( s , i ) => <ListItem disablePadding key={i}  onClick={ e=> { this.setState({context:s })  }  } >
+            			<ListItemButton>
+            				<ListItemText primary={ s } />
+            			</ListItemButton>
+            		</ListItem> ) }
             </List>
             </Drawer>
 
@@ -147,25 +165,12 @@ class  App extends React.Component {
             </Box>
             <Snackbar
             open={ this.state.message != null }
-            autoHideDuration={6000}
+            autoHideDuration={4000}
             onClose={ e => this.setState({ message : null}) }
             message={ this.state.message }
             />
-            <Container maxWidth="sm">
-            {
-                this.state.context == CONTEXT_IPFS ?
-                <IPFSFiles online={ this.state.online } callback={ this.eventHandler.bind(this) } /> :
-                this.state.context === CONTEXT_CONTRACT ?
-                <IPFSContract online={ this.state.online } callback={ this.eventHandler.bind(this) } /> :
-                this.state.context === CONTEXT_IPFS_SYNC ?
-                <IPFSSync online={ this.state.online } callback={ this.eventHandler.bind(this) } /> :
-                this.state.context === CONTEXT_EIP712 ?
-                <EIP712Sign online={ this.state.online } callback={ this.eventHandler.bind(this) } /> :
-                this.state.context === CONTEXT_ZKEXAMPLE ?
-                <ZKExample online={ this.state.online } callback={ this.eventHandler.bind(this) } /> :
-                this.state.context === CONTEXT_LIBP2P ?
-                <Libp2p online={ this.state.online } callback={ this.eventHandler.bind(this) } /> : null
-            }
+            <Container maxWidth="md">
+            { this.getContent() }
             </Container>
             </ThemeProvider>
             </div>
