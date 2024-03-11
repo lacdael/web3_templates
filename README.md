@@ -28,7 +28,7 @@ A simple zero knowledge proof smart contract, poving a number x is the product o
 A simple browser p2p chat app using libp2p.
 
 ## Ceramic
-!Work in progress
+
 Simple query, authorise and mutation example with web3modal
 
 # Quick Start

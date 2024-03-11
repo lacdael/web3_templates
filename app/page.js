@@ -30,8 +30,6 @@ import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
 
-const web3modal_KEY = process.env["NEXT_PUBLIC_PROJECT_ID"];
-
 //Conponents
 import EIP712Sign from './eip712Sign';
 import Ceramic from './ceramic';
@@ -93,11 +91,9 @@ class  App extends React.Component {
      switch( this.state.context) {
         case CONTEXT_EIP712 : return <EIP712Sign
 		     action={ this.state.action }
-		     vars={{'PROJECT_ID': web3modal_KEY } }
 		     callback={ this.eventHandler.bind(this) } />
 	case CONTEXT_CERAMIC : return <Ceramic
 		     action={ this.state.action }
-		     vars={{'PROJECT_ID': web3modal_KEY } }
 		     callback={ this.eventHandler.bind(this) } />
 	//case CONTEXT_IPFS : return <IPFSFiles online={ this.state.online } callback={ this.eventHandler.bind(this) } />
 	//case CONTEXT_CONTRACT : return <IPFSContract online={ this.state.online } callback={ this.eventHandler.bind(this) } />

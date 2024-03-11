@@ -3,94 +3,78 @@
 import * as React from 'react';
 import { useState, useEffect } from "react";
 
+/****Material UI****/
 import SubdirectoryArrowLeftIcon from '@mui/icons-material/SubdirectoryArrowLeft';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
+/*****************/
 
-//import { create } from 'ipfs';
+/*****WEB 3.0*****/
 import { v4 as uuid } from 'uuid';
 import ABI from "../assets/eip712-sign.json";
-
-import { createWeb3Modal,
-	defaultWagmiConfig,
+import { createWeb3Modal } from '@web3modal/wagmi/react'
+import { defaultWagmiConfig } from '@web3modal/wagmi/react/config'
+import { sepolia } from 'wagmi/chains'
+import { WagmiProvider } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import {
 	useWeb3ModalState,
 	useWeb3Modal } from '@web3modal/wagmi/react'
-import { WagmiConfig,
-	useContractEvent,
+import {
+	useReadContract,
+	useWriteContract,
+	useWatchContractEvent,
 	useDisconnect,
 	useAccount } from 'wagmi'
-import { getContract,
-    readContract,
-    watchContractEvent,
-    sendTransaction,
-	signTypedData,
+import {
+    signTypedData,
     signMessage,
-    prepareWriteContract,
-    writeContract
 } from '@wagmi/core'
+/*****************/
 
+const queryClient = new QueryClient()
+const projectId = process.env.NEXT_PUBLIC_PROJECT_ID
 
-import { sepolia } from 'viem/chains'
 //Solidity 0.8.7
 const CONTRACT_ADDRESS = "0x72A6c6c4409404454c5b23eFeB93aB653F25336D";
 const CONTRACT_NETWORK = "11155111";
 
-
-/*
-const providerOptions = {
-    walletconnect: {
-        package: WalletConnectProvider, // required
-        options: {
-            'rpc' : { 11155111 : 'https://rpc-sepolia.rockx.com' },
-            'network': 'Sepolia',
-            'chainid': 11155111,
-            infuraId: "INFURA_ID" // required
-        }
-    }
-};
-*/
-
-/*
-const web3Modal = new Web3Modal({
-    network: "mainnet", // optional
-    cacheProvider: true, // optional
-    providerOptions // required
-});
-
-*/
-
-export default function EIP712Sign( props ) {
-
-// 1. Get projectId at https://cloud.walletconnect.com
-const projectId = props.vars['PROJECT_ID'];
-//const projectId = "PROJECT_ID";// process.env.PROJECT_ID
-
-//console.log( process.env );
-
-// 2. Create wagmiConfig
 const metadata = {
-  name: 'EIP-712 Sign',
-  description: 'EIP-712 Sign Example',
+  name: 'Web3Modal',
+  description: 'Web3Modal Example',
+  url: 'https://web3modal.com', // origin must match your domain & subdomain
   icons: ['https://avatars.githubusercontent.com/u/37784886']
 }
 
 const chains = [ sepolia ]
-const wagmiConfig = defaultWagmiConfig({
-  chains,
-  projectId,
-  metadata,
+const config = defaultWagmiConfig({
+  chains, // required
+  projectId, // required
+  metadata, // required
+  enableWalletConnect: true, // Optional - true by default
+  enableInjected: true, // Optional - true by default
+  enableEIP6963: true, // Optional - true by default
+  enableCoinbase: true, // Optional - true by default
 })
 
-// 3. Create modal
-createWeb3Modal({ wagmiConfig, projectId, chains })
+createWeb3Modal({
+  wagmiConfig: config,
+  projectId,
+  enableAnalytics: false
+})
 
+export default function EIP712Sign( props ) {
+	
 	return (
-           <WagmiConfig config={wagmiConfig}> 
-		<EIP712Sign_
-			action={props.action}
-			callback={props.callback} />
-</WagmiConfig>
+		<WagmiProvider config={config}>
+      			<QueryClientProvider
+				client={queryClient}>
+				<EIP712Sign_
+					action={props.action}
+					callback={props.callback} />
+			</QueryClientProvider>
+    		</WagmiProvider>
 	);
 }
 
@@ -99,14 +83,11 @@ function EIP712Sign_( props ) {
     const { address, isConnecting, isDisconnected } = useAccount()
     const { open } = useWeb3Modal()
     const [referalCode, setReferalCode] = useState('');
-    const [state, setState] = useState({
-            codeToSign: '',
-            codeToCheck: '',
-            signingData:''
-        });
+    const [codeToCheck, setCodeToCheck] = useState('');
+    const [signingData, setSigningData ] = useState('');
     const { open: modelIsOpen , selectedNetworkId } = useWeb3ModalState()
-const { disconnect } = useDisconnect()
-
+    const { disconnect } = useDisconnect()
+    const { hash, writeContract } = useWriteContract()
 
     const end = async () => {
 	console.log("end");
@@ -114,7 +95,23 @@ const { disconnect } = useDisconnect()
         props.callback( "onlineState", false );
 	disconnect();
     }
-   
+
+    const wagmiContractConfig = { address: CONTRACT_ADDRESS,abi: ABI };
+
+    const { 
+    	data,
+	refetch,
+    	error, 
+    	isPending 
+    } = useReadContract({
+	...wagmiContractConfig,
+	functionName: "signings",
+    	args: [ codeToCheck ],
+	});
+
+    useEffect( () => {
+	setSigningData( JSON.stringify( data, (_, v) => typeof v === 'bigint' ? v.toString() : v , 2  ) );
+    }, [ data ] );
 
     useEffect(() => {
 	if ( isDisconnected || !address){
@@ -160,11 +157,11 @@ const { disconnect } = useDisconnect()
         return `${ d.getHours()  }:${ d.getMinutes() }:${ d.getSeconds() }`;
     }
 
- useContractEvent({
+useWatchContractEvent({
     address: CONTRACT_ADDRESS,
     abi: ABI,
     eventName: 'ReferalCode',
-    listener: ( data ) => {
+    onLogs ( data ) {
 	    try{
 	const a = data[0]["args"]["_to"];
 	const code = data[0]["args"]["_code"];
@@ -178,11 +175,11 @@ const { disconnect } = useDisconnect()
     }
   })
 
- useContractEvent({
+useWatchContractEvent({
     address: CONTRACT_ADDRESS,
     abi: ABI,
     eventName: 'Sign',
-    listener: ( data ) => {
+    onLogs ( data ) {
 	    try{
 		    console.log("Sign event");
 		    console.log( data );
@@ -200,48 +197,37 @@ const { disconnect } = useDisconnect()
   })
 
 
-    const contractGetReferalCode = async () => {
-	prepareWriteContract({
+    const contractGetReferalCode = () => {
+	writeContract({
         	address: CONTRACT_ADDRESS,
                         abi: ABI,
                         functionName: 'getReferalCode',
                         args: [ ],
-        }).then( ({request}) => {
-        	writeContract(request).catch( e => props.callback( "message", `Error: ${e}` ));
-	}).catch( e => props.callback( "message", `Error: ${e}` ));
+        });
     }
 
 
-    const contractSubmitReferal = async ( aCode , aV , aR , aS ) => {
-	prepareWriteContract({
+    const contractSubmitReferal = ( aCode , aV , aR , aS ) => {
+	writeContract({
         	address: CONTRACT_ADDRESS,
 		abi: ABI,
 		functionName: 'submitReferal',
 		args: [ aCode, aV, aR, aS  ],
-        }).then( ({request}) => {
-        	writeContract(request).then( (rsp) => {
-	    		console.log( rsp );
-			//const signer = ( "events" in r && "Signed" in r.events ) ? r.events.Signed.returnValues._by : "?";
-            		//props.callback( "message", `Referal code signed by: ${signer}` );
-       			//props.callback( "message", `Referal code: ${rsp["hash"]}` );
-			//setState(prev => ({ ...prev, referalCode : `${rsp["hash"]}` }));
-                }).catch( e => props.callback( "message", `Error: ${e}` ));
-	}).catch( e => props.callback( "message", `Error: ${e}` ));
-
+        });
     }
 
-    const contractGetSignings = async ( anAddress ) => {
+    const contractGetSignings = ( aCodeToCheck ) => {
 	readContract({
-             address: CONTRACT_ADDRESS,
-             abi: ABI,
-             functionName: "signings",
-             args: [ anAddress  ]
-        }).then( (rsp) => {
-            setState(prev =>(
-		    { ...prev,
-			signingData : JSON.stringify( rsp, (_, v) => typeof v === 'bigint' ? v.toString() : v , 2  )
-		    }));
-	});
+        address: CONTRACT_ADDRESS,
+        abi: ABI,
+        functionName: "signings",
+    	args: [ aCodeToCheck ],
+	}).then( ( data ) => {
+	    setState(prev => (
+		{ ...prev,
+		signingData : JSON.stringify( data, (_, v) => typeof v === 'bigint' ? v.toString() : v , 2  )
+	    }));
+	}).catch( (e) => error.log( e ) );
     }
 
     const sign = async ( codeStr  ) => {
@@ -312,12 +298,12 @@ const { disconnect } = useDisconnect()
 		    fullWidth
 		    id="input-with-icon-textfield"
 		    label="referal Code To Sign"
-		    onKeyUp={ e => setState(prev=>({...prev, codeToSign : e.target.value })) }
-		    onBlur={ e => setState(prev=>({...prev, codeToSign : e.target.value })) }
+		    onKeyUp={ e => setCodeToSign( e.target.value ) }
+		    onBlur={ e => setCodeToSign( e.target.value ) }
 
 		    InputProps={{
 			endAdornment: (
-			    <IconButton onClick={ e => sign( state.codeToSign ) } >
+			    <IconButton onClick={ e => sign( codeToSign ) } >
 			    <SubdirectoryArrowLeftIcon />
 			    </IconButton>
 			),
@@ -328,17 +314,17 @@ const { disconnect } = useDisconnect()
 		    fullWidth
 		    id="input-with-icon-textfield"
 		    label="Enter referal code - get address signature count"
-		    onKeyUp={ e => setState(prev =>({ ...prev,codeToCheck : e.target.value })) }
-		    onBlur={ e => setState( prev =>({ ...prev,codeToCheck : e.target.value })) }
+		    onKeyUp={ e => setCodeToCheck( e.target.value ) }
+		    onBlur={ e => setCodeToCheck( e.target.value ) }
 
 		    InputProps={{
 			endAdornment: (
-			    <IconButton onClick={ e => contractGetSignings( state.codeToCheck ) } >
+			    <IconButton onClick={ e => refetch() } >
 			    <SubdirectoryArrowLeftIcon />
 			    </IconButton>
 			),
 		    }} />
-            	<div style={{margin:`1em`}} >{ state.signingData }</div>
+            	<div style={{margin:`1em`}} >{ signingData }</div>
             </>
         );
 }
