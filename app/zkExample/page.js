@@ -48,7 +48,8 @@ const PROVIDER_CHAIN_ID = 11155111;
 const PROVIDER_RPC = { 11155111 : 'https://rpc-sepolia.rockx.com'};
 const CONTRACT_ADDR = "0x5ADC69669cFF2B9E6ffE56a3A8EFD31106203354";
 const CONTRACT_NETWORK = "11155111";
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '';
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH
+    ?? (process.env.NODE_ENV === 'production' ? '/web3_templates' : '');
 
 export default function ZKExamplePage({ callback }) {
     const [connected, setConnected] = useState(false);

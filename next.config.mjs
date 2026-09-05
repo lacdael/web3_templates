@@ -1,6 +1,9 @@
 import path from 'node:path';
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+// GitHub Pages serves this project from /web3_templates. Keep local
+// development at the domain root unless a different prefix is supplied.
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH
+  ?? (process.env.NODE_ENV === 'production' ? '/web3_templates' : '');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
