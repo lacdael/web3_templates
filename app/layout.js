@@ -71,6 +71,7 @@ const CONTEXT_TO_PATH = {
     [CONTEXT_IPFS_SYNC]: '/ipfsSync',
     [CONTEXT_LIBP2P]: '/libp2p',
     [CONTEXT_ZKEXAMPLE]: '/zkExample',
+    [CONTEXT_ZKEXAMPLE]: '/nostr',
 };
 
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID || 'YOUR_PROJECT_ID';
