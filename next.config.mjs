@@ -1,11 +1,17 @@
 import path from 'node:path';
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  basePath,
+  assetPrefix: basePath ? `${basePath}/` : undefined,
+  trailingSlash: true,
   images: {
     loader: 'imgix',
     path: 'http://localhost:3000',
+    unoptimized: true,
   },
   output: 'export',
   webpack: (config) => {
