@@ -1,5 +1,7 @@
 # Web3 Templates
 
+[live demo](https://lacdael.github.io/web3_templates/)
+
 This project is a collection of small browser experiments for working with distributed data, wallet signatures, peer-to-peer connections, and verifiable computation. Each example is deliberately narrow: the interface exposes enough of the underlying system to make the data flow visible while keeping the code easy to follow.
 
 The examples are most useful when a browser wallet, a local Ceramic node, or a reachable peer is available. Some paths are demonstration prototypes rather than production-ready applications, so live network behaviour still needs to be checked in the environment where they will be used.
